@@ -1,0 +1,87 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:scheduler_app_sms/features/auth/data/user_model.dart';
+
+class AuthServices {
+  static final CollectionReference _userCollection =
+      FirebaseFirestore.instance.collection('users');
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  //create user
+  static Future<(User?,String)> signUp(UserModel user) async {
+    try {
+      UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
+        email: user.email,
+        password: user.password!,
+      );
+      var userResult = userCredential.user;
+      user = user.copyWith(id: userResult!.uid);
+      await _userCollection.doc(user.id).set(user.toMap());
+      return (userResult,'User created successfully');
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'weak-password') {
+        return (null,'The password provided is too weak.');
+      } else if (e.code == 'email-already-in-use') {
+        return (null,'The account already exists for that email.');
+      }else{
+        return (null,'An error occurred');
+      }
+    }
+    catch (e) {
+      return (null,'An error occurred');
+    }
+  }
+
+  //sign in
+  static Future<(UserModel?,String)> signIn(String email, String password) async {
+    try {
+      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+      if (userCredential.user == null) {
+        return (null,'No user found for that email.');
+      }
+      var user = await _userCollection.doc(userCredential.user!.uid).get();
+      if(user.exists) {
+        return (UserModel.fromMap(user.data() as Map<String,dynamic>), 'User signed in successfully');
+      }else{
+        //sign out user
+        await _auth.signOut();
+        return (null,'No user found for that email.');
+      }
+      
+    } on FirebaseAuthException catch (e) {
+      if (e.code == 'user-not-found') {
+        return (null,'No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        return (null,'Wrong password provided for that user.');
+      }else{
+        return (null,'An error occurred');
+      }
+    }
+    catch (e) {
+      return (null,'An error occurred');
+    }
+  }
+
+  //sign out
+  static Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+  static Future<UserModel?>getUser({required String userId})async {
+    try{
+      var user = await _userCollection.doc(userId).get();
+      if(user.exists) {
+        return UserModel.fromMap(user.data() as Map<String,dynamic>);
+      }else{
+        return null;
+      }
+    }catch(e){
+      return null;
+    }
+  }
+
+}
