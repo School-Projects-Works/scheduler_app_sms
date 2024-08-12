@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler_app_sms/features/auth/data/user_model.dart';
+import 'package:scheduler_app_sms/features/task/data/task_model.dart';
+import 'package:scheduler_app_sms/features/task/services/functions.dart';
 import 'package:scheduler_app_sms/utils/text_styles.dart';
 import '../../utils/app_colors.dart';
 import '../appBar/gradient_app_bar.dart';
 
-Widget fullAppbar(BuildContext context) {
+Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel ?due) {
   return NewGradientAppBar(
     flexibleSpace: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -18,25 +21,41 @@ Widget fullAppbar(BuildContext context) {
     ),
     title: Container(
       margin: const EdgeInsets.only(top: 20),
-      child: const Column(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Text(
-            'Hello Brenda!',
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
+            'Hello ${user!.name}!',
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           Text(
-            'Today you have 9 tasks',
-            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w300),
+            'Today you have $todayTask tasks',
+            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w300),
           ),
         ],
       ),
     ),
     actions: <Widget>[
-      Container(
-        margin: const EdgeInsets.fromLTRB(0, 20, 20, 0),
-        child: Image.asset('assets/images/photo.png'),
+      InkWell(
+        onTap: () {
+          // Navigator.pushNamed(context, '/profile');
+        },
+        child: Container(
+          width: 50,
+          height: 50,
+          decoration: const BoxDecoration(
+            shape: BoxShape.circle,
+            color: CustomColors.headerGreyLight,
+          ),
+          margin: const EdgeInsets.fromLTRB(0, 20, 20, 0),
+          child: user.photoUrl != null && user.photoUrl!.isNotEmpty
+              ? ClipOval(child: Image.network(user.photoUrl!))
+              : const Icon(
+                  Icons.person,
+                  color: Colors.white,
+                ),
+        ),
       ),
     ],
     elevation: 0,
@@ -57,42 +76,40 @@ Widget fullAppbar(BuildContext context) {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-            const Column(
+             Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Text(
-                  'Today Reminder',
+                const Text(
+                  'Today\'s due Task',
                   style: TextStyle(
                       color: Colors.white,
                       fontSize: 17,
                       fontWeight: FontWeight.w600),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 3,
                 ),
                 Text(
-                  'Meeting with client',
-                  style: TextStyle(
+                due!=null?due!.title:'No task due today' ,
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w300),
                 ),
-                SizedBox(
+                const SizedBox(
                   height: 3,
                 ),
                 Text(
-                  '13.00 PM',
-                  style: TextStyle(
+             due!=null?     formatTime(due.time):'',
+                  style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w300),
                 ),
               ],
             ),
-            Container(
-              width: MediaQuery.of(context).size.width / 2.9,
-            ),
+            const Spacer(),
             Image.asset(
               'assets/images/bell-left.png',
               scale: 1.3,

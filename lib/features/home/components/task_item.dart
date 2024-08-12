@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:scheduler_app_sms/core/navigations.dart';
 import 'package:scheduler_app_sms/core/widget/custom_dialog.dart';
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 import 'package:scheduler_app_sms/features/task/provider/task_provider.dart';
 import 'package:scheduler_app_sms/features/task/services/functions.dart';
-
 import '../provider/new_task_provider.dart';
 import '../views/edit_task.dart';
 
 class TaskItem extends ConsumerWidget {
-   TaskItem({super.key, required this.task});
+  TaskItem({super.key, required this.task, this.showDate = false});
   final TaskModel task;
+  final bool showDate;
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,9 +82,7 @@ class TaskItem extends ConsumerWidget {
               flex: 1,
               onPressed: (context) {
                 ref.read(editTaskProvider.notifier).setTask(task);
-                editBottomSheet(
-                    context,ref, formKey
-                );
+                navigateTransparentRoute(context, const EditTask());
               },
               backgroundColor: const Color.fromARGB(255, 54, 138, 217),
               foregroundColor: Colors.white,
@@ -136,11 +136,23 @@ class TaskItem extends ConsumerWidget {
         padding: const EdgeInsets.all(10),
         child: Row(
           children: [
-            Text(formatTime(task.time),
-                style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey)),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(formatTime(task.time),
+                    style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey)),
+                if (showDate)
+                  Text(formatDate(task.date),
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.grey)),
+              ],
+            ),
             const SizedBox(
               width: 10,
             ),
@@ -195,6 +207,19 @@ class TaskItem extends ConsumerWidget {
               ],
             ),
             const Spacer(),
+            if (task.status == 'ongoing')
+              const Icon(
+                FontAwesomeIcons.play,
+                size: 18,
+                color: Colors.blue,
+              ),
+            if (task.status == 'completed')
+              const Icon(
+                FontAwesomeIcons.check,
+                size: 18,
+                color: Colors.green,
+              ),
+              
             Padding(
               padding: const EdgeInsets.only(left: 10),
               child: Icon(

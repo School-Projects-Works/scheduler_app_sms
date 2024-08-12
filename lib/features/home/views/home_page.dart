@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scheduler_app_sms/core/provider/nav_provider.dart';
 import 'package:scheduler_app_sms/features/appointment/views/appointment_page.dart';
+import 'package:scheduler_app_sms/features/auth/provider/user_provider.dart';
 import 'package:scheduler_app_sms/features/home/views/task_list_page.dart';
 import 'package:scheduler_app_sms/features/task/provider/task_provider.dart';
 import 'package:scheduler_app_sms/features/task/views/task_page.dart';
@@ -26,25 +27,25 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
           preferredSize: const Size.fromHeight(210.0),
-          child: fullAppbar(context)),
+          child: fullAppbar(context, ref.watch(userProvider),ref.watch(taskFilterProvider).todaysTask.length,ref.watch(taskFilterProvider).dueTask)),
       body: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          height: MediaQuery.of(context).size.height,
-          child:taskStream.when(data: (data)=>
-           () {
-            if (index == 0) {
-              return const TaskListPage();
-            } else if (index == 1) {
-              return const TaskPage();
-            } else {
-              const AppointmentPage();
-            }
-          }(),
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, stack) => Center(
-                child: Text('Error: $error'),
-              )),
-          ),
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: taskStream.when(
+            data: (data) => () {
+                  if (index == 0) {
+                    return const TaskListPage();
+                  } else if (index == 1) {
+                    return const TaskPage();
+                  } else {
+                    const AppointmentPage();
+                  }
+                }(),
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (error, stack) => Center(
+                  child: Text('Error: $error'),
+                )),
+      ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: customFab(context, ref, form),
       bottomNavigationBar: const Padding(

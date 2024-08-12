@@ -59,6 +59,7 @@ class NewTaskProvider extends StateNotifier<TaskModel> {
     } else {
       var results = await TaskServices.addTask(state);
       if (results) {
+        state = TaskModel.empty();
         CustomDialogs.dismiss();
         CustomDialogs.toast(
             message: 'Task created successfully', type: DialogType.success);
@@ -74,7 +75,7 @@ class NewTaskProvider extends StateNotifier<TaskModel> {
 }
 
 final editTaskProvider =
-    StateNotifierProvider.autoDispose<EditTaskProvider, TaskModel>(
+    StateNotifierProvider<EditTaskProvider, TaskModel>(
         (ref) => EditTaskProvider());
 
 class EditTaskProvider extends StateNotifier<TaskModel> {
@@ -112,6 +113,7 @@ class EditTaskProvider extends StateNotifier<TaskModel> {
     CustomDialogs.loading(message: 'updating task..');
     var results = await TaskServices.updateTask(state);
     if (results) {
+      state = TaskModel.empty();
       CustomDialogs.dismiss();
       CustomDialogs.toast(
           message: 'Task updated successfully', type: DialogType.success);
