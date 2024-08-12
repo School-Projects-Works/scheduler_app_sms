@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_datetime_picker_plus/flutter_datetime_picker_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:scheduler_app_sms/core/widget/custom_button.dart';
-import 'package:scheduler_app_sms/core/widget/custom_input.dart';
 import 'package:scheduler_app_sms/features/home/provider/new_task_provider.dart';
 
+import '../../../core/widget/custom_button.dart';
+import '../../../core/widget/custom_input.dart';
 import '../../../utils/app_colors.dart';
 
-mainBottomSheet(
+editBottomSheet(
     BuildContext context, WidgetRef ref, GlobalKey<FormState> form) {
-  var newTaskNotifier = ref.read(newTaskProvider.notifier);
+  var editTaskNotifier = ref.read(editTaskProvider.notifier);
   List<String> taskType = ['Personal', 'Work', 'Meeting', 'Study'];
   showModalBottomSheet(
     context: context,
@@ -90,7 +90,7 @@ mainBottomSheet(
                               children: <Widget>[
                                 const SizedBox(height: 10),
                                 const Text(
-                                  'Add new task',
+                                  'Edit  task',
                                   style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600),
@@ -99,6 +99,7 @@ mainBottomSheet(
                                 CustomTextFields(
                                   label: 'Title',
                                   hintText: 'Enter task title',
+                                  initialValue: ref.watch(editTaskProvider).title,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
                                       return 'Please enter task title';
@@ -106,13 +107,16 @@ mainBottomSheet(
                                     return null;
                                   },
                                   onSaved: (title) {
-                                    newTaskNotifier.setTaskTitle(title!);
+                                    editTaskNotifier.setTaskTitle(title!);
                                   },
                                 ),
                                 const SizedBox(height: 20),
                                 CustomTextFields(
                                   label: 'Description',
                                   hintText: 'Enter task description',
+                                  initialValue: ref
+                                      .watch(editTaskProvider)
+                                      .description,
                                   maxLines: 3,
                                   validator: (value) {
                                     if (value == null || value.isEmpty) {
@@ -121,7 +125,7 @@ mainBottomSheet(
                                     return null;
                                   },
                                   onSaved: (description) {
-                                    newTaskNotifier
+                                    editTaskNotifier
                                         .setTaskDescription(description!);
                                   },
                                 ),
@@ -138,11 +142,11 @@ mainBottomSheet(
                                   onSaved: (date) {},
                                   isReadOnly: true,
                                   controller: TextEditingController(
-                                    text: ref.watch(newTaskProvider).date != 0
+                                    text: ref.watch(editTaskProvider).date != 0
                                         ? DateFormat('MMM, dd yyyy').format(
                                             DateTime.fromMillisecondsSinceEpoch(
                                                 ref
-                                                    .watch(newTaskProvider)
+                                                    .watch(editTaskProvider)
                                                     .date))
                                         : null,
                                   ),
@@ -156,9 +160,9 @@ mainBottomSheet(
                                           onChanged: (date) {
                                         // newTaskNotifier.setTaskDate(date);
                                       }, onConfirm: (date) {
-                                        newTaskNotifier.setTaskDate(date);
+                                        editTaskNotifier.setTaskDate(date);
                                         setState(() {
-                                          //ref.watch(newTaskProvider).date = date.millisecondsSinceEpoch;
+                                          
                                         });
                                       },
                                           currentTime: DateTime.now(),
@@ -179,11 +183,11 @@ mainBottomSheet(
                                   onSaved: (time) {},
                                   isReadOnly: true,
                                   controller: TextEditingController(
-                                    text: ref.watch(newTaskProvider).time != 0
+                                    text: ref.watch(editTaskProvider).time != 0
                                         ? DateFormat('hh:mm a').format(
                                             DateTime.fromMillisecondsSinceEpoch(
                                                 ref
-                                                    .watch(newTaskProvider)
+                                                    .watch(editTaskProvider)
                                                     .time))
                                         : null,
                                   ),
@@ -195,7 +199,7 @@ mainBottomSheet(
                                           onChanged: (time) {
                                         // newTaskNotifier.setTaskDate(date);
                                       }, onConfirm: (time) {
-                                        newTaskNotifier.setTaskTime(time);
+                                        editTaskNotifier.setTaskTime(time);
                                         setState(() {
                                           //ref.watch(newTaskProvider).date = date.millisecondsSinceEpoch;
                                         });
@@ -225,7 +229,7 @@ mainBottomSheet(
                                               labelStyle: TextStyle(
                                                 color: ref
                                                             .watch(
-                                                                newTaskProvider)
+                                                                editTaskProvider)
                                                             .type ==
                                                         type
                                                     ? Colors.white
@@ -234,7 +238,7 @@ mainBottomSheet(
                                               iconTheme: IconThemeData(
                                                 color: ref
                                                             .watch(
-                                                                newTaskProvider)
+                                                                editTaskProvider)
                                                             .type ==
                                                         type
                                                     ? Colors.white
@@ -242,11 +246,11 @@ mainBottomSheet(
                                               ),
                                               label: Text(type),
                                               selected: ref
-                                                      .watch(newTaskProvider)
+                                                      .watch(editTaskProvider)
                                                       .type ==
                                                   type,
                                               onSelected: (selected) {
-                                                newTaskNotifier
+                                                editTaskNotifier
                                                     .setTaskType(type);
                                                 setState(
                                                   () {},
@@ -278,7 +282,7 @@ mainBottomSheet(
                                                 labelStyle: TextStyle(
                                                   color: ref
                                                           .watch(
-                                                              newTaskProvider)
+                                                              editTaskProvider)
                                                           .notifierMe
                                                       ? Colors.white
                                                       : Colors.black,
@@ -286,17 +290,17 @@ mainBottomSheet(
                                                 iconTheme: IconThemeData(
                                                   color: ref
                                                           .watch(
-                                                              newTaskProvider)
+                                                              editTaskProvider)
                                                           .notifierMe
                                                       ? Colors.white
                                                       : Colors.black,
                                                 ),
                                                 label: const Text('Yes'),
                                                 selected: ref
-                                                    .watch(newTaskProvider)
+                                                    .watch(editTaskProvider)
                                                     .notifierMe,
                                                 onSelected: (selected) {
-                                                  newTaskNotifier
+                                                  editTaskNotifier
                                                       .setReminder(true);
                                                   setState(
                                                     () {},
@@ -311,7 +315,7 @@ mainBottomSheet(
                                                 labelStyle: TextStyle(
                                                   color: !ref
                                                           .watch(
-                                                              newTaskProvider)
+                                                              editTaskProvider)
                                                           .notifierMe
                                                       ? Colors.white
                                                       : Colors.black,
@@ -319,17 +323,17 @@ mainBottomSheet(
                                                 iconTheme: IconThemeData(
                                                   color: !ref
                                                           .watch(
-                                                              newTaskProvider)
+                                                              editTaskProvider)
                                                           .notifierMe
                                                       ? Colors.white
                                                       : Colors.black,
                                                 ),
                                                 label: const Text('No'),
                                                 selected: !ref
-                                                    .watch(newTaskProvider)
+                                                    .watch(editTaskProvider)
                                                     .notifierMe,
                                                 onSelected: (selected) {
-                                                  newTaskNotifier
+                                                  editTaskNotifier
                                                       .setReminder(false);
                                                   setState(
                                                     () {},
@@ -341,12 +345,12 @@ mainBottomSheet(
                                 ),
                                 const SizedBox(height: 20),
                                 CustomButton(
-                                  text: 'Save Task',
+                                  text: 'Update Task',
                                   radius: 5,
                                   onPressed: () {
                                     if (form.currentState!.validate()) {
                                       form.currentState!.save();
-                                      newTaskNotifier.saveTask(context, ref);
+                                      editTaskNotifier.updateTask(context, ref);
                                     }
                                   },
                                 )

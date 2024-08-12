@@ -122,4 +122,19 @@ class TaskModel {
       notifierMe.hashCode ^
       createdAt.hashCode;
   }
+
+  static TaskModel empty() {
+    return TaskModel(
+      id: '',
+      title: '',
+      userId: '',
+      description: '',
+      date: 0,
+      time: 0,
+      status: '',
+      type: '',
+      notifierMe: false,
+      createdAt: DateTime.now().millisecondsSinceEpoch,
+    );
+  }
 }

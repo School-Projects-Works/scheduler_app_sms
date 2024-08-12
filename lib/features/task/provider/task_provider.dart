@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scheduler_app_sms/core/widget/custom_dialog.dart';
 
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 import 'package:scheduler_app_sms/features/task/services/task_services.dart';
@@ -104,6 +105,36 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
               .where((task) =>
                   task.title.toLowerCase().contains(query.toLowerCase()))
               .toList());
+    }
+  }
+
+  void deleteTask(String id) async {
+    CustomDialogs.dismiss();
+    CustomDialogs.loading(message: 'deleting task..');
+    var results = await TaskServices.deleteTask(id);
+    if (results) {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(
+          message: 'Task deleted successfully', type: DialogType.success);
+    } else {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(
+          message: 'Task deletion failed', type: DialogType.error);
+    }
+  }
+
+  void updateTask(TaskModel copyWith) async{
+    CustomDialogs.dismiss();
+    CustomDialogs.loading(message: 'updating task..');
+    var results = await TaskServices.updateTask(copyWith);
+    if (results) {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(
+          message: 'Task updated successfully', type: DialogType.success);
+    } else {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(
+          message: 'Task update failed', type: DialogType.error);
     }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scheduler_app_sms/core/provider/nav_provider.dart';
 import 'package:scheduler_app_sms/features/appointment/views/appointment_page.dart';
 import 'package:scheduler_app_sms/features/home/views/task_list_page.dart';
+import 'package:scheduler_app_sms/features/task/provider/task_provider.dart';
 import 'package:scheduler_app_sms/features/task/views/task_page.dart';
 import '../../../core/widget/app_bar.dart';
 import '../../../core/widget/bottom_nav_bar.dart';
@@ -16,9 +17,11 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
+  final GlobalKey<FormState> form = GlobalKey<FormState>();
   @override
   Widget build(BuildContext context) {
     var index = ref.watch(navigationProvider);
+    var taskStream = ref.watch(taskStreamProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -27,7 +30,8 @@ class _HomePageState extends ConsumerState<HomePage> {
       body: SizedBox(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
-          child: () {
+          child:taskStream.when(data: (data)=>
+           () {
             if (index == 0) {
               return const TaskListPage();
             } else if (index == 1) {
@@ -35,9 +39,14 @@ class _HomePageState extends ConsumerState<HomePage> {
             } else {
               const AppointmentPage();
             }
-          }()),
+          }(),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, stack) => Center(
+                child: Text('Error: $error'),
+              )),
+          ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: customFab(context, ref),
+      floatingActionButton: customFab(context, ref, form),
       bottomNavigationBar: const Padding(
         padding: EdgeInsets.only(top: 30),
         child: BottomNavigationBarApp(),

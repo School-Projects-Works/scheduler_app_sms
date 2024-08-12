@@ -11,7 +11,7 @@ class TaskServices {
 
   static Future<bool> addTask(TaskModel task) async {
     try {
-      await taskCollection.doc(task.id).set(task);
+      await taskCollection.doc(task.id).set(task.toMap());
       return true;
     } catch (e) {
       return false;

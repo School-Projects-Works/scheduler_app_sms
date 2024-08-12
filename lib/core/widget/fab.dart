@@ -3,12 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/home/views/new_task_page.dart';
 import '../../utils/app_colors.dart';
 
-FloatingActionButton customFab(context,WidgetRef ref) {
+FloatingActionButton customFab(context,WidgetRef ref,GlobalKey<FormState> form) {
 
 
   return FloatingActionButton(
     onPressed: () {
-      mainBottomSheet(context,ref);
+      mainBottomSheet(context,ref, form);
     },
     elevation: 5,
     backgroundColor: Colors.transparent,
