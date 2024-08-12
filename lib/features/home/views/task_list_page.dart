@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scheduler_app_sms/features/task/provider/task_provider.dart';
 
 import '../../../utils/app_colors.dart';
+import '../../task/services/functions.dart';
 
 class TaskListPage extends ConsumerStatefulWidget {
   const TaskListPage({super.key});
@@ -27,6 +28,19 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
                 fontWeight: FontWeight.w600,
                 color: CustomColors.textSubHeader),
           ),
+        ),
+        ListView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: taskList.todaysTask.length,
+          itemBuilder: (context, index) {
+            var task = taskList.todaysTask[index];
+            return ListTile(
+              title: Text(task.title),
+              subtitle: Text(task.description),
+              trailing: Text(formatTime(task.time)),
+            );
+          },
         ),
       ],
     );

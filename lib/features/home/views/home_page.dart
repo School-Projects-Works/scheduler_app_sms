@@ -37,7 +37,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             }
           }()),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: customFab(context),
+      floatingActionButton: customFab(context, ref),
       bottomNavigationBar: const Padding(
         padding: EdgeInsets.only(top: 30),
         child: BottomNavigationBarApp(),

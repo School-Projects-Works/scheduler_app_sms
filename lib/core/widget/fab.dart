@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:scheduler_app_sms/core/widget/bottom_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/home/views/new_task_page.dart';
 import '../../utils/app_colors.dart';
 
-FloatingActionButton customFab(context) {
-  Modal modal = Modal();
+FloatingActionButton customFab(context,WidgetRef ref) {
+
 
   return FloatingActionButton(
     onPressed: () {
-      modal.mainBottomSheet(context);
+      mainBottomSheet(context,ref);
     },
     elevation: 5,
     backgroundColor: Colors.transparent,
@@ -19,8 +20,8 @@ FloatingActionButton customFab(context) {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: <Color>[
-            CustomColors.purpleLight,
-            CustomColors.purpleDark,
+            CustomColors.greenDark,
+            CustomColors.greenLight,
           ],
         ),
         borderRadius: BorderRadius.all(
@@ -28,7 +29,7 @@ FloatingActionButton customFab(context) {
         ),
         boxShadow: [
           BoxShadow(
-            color: CustomColors.purpleShadow,
+            color: CustomColors.greenDark,
             blurRadius: 10.0,
             spreadRadius: 5.0,
             offset: Offset(0.0, 0.0),
