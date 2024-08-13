@@ -19,11 +19,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   Future<void> _pickImage() async {
     final XFile? selected =
         await _picker.pickImage(source: ImageSource.gallery);
-        if(selected!=null) {
-          var byteImage =await  selected.readAsBytes();
-          ref.read(profileImage.notifier).state = byteImage;
-        }
-    
+    if (selected != null) {
+      var byteImage = await selected.readAsBytes();
+      ref.read(profileImage.notifier).state = byteImage;
+    }
   }
 
   @override
@@ -34,55 +33,65 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       appBar: customAppbar(title: 'Profile'),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: GestureDetector(
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              GestureDetector(
                 onTap: _pickImage,
                 child: CircleAvatar(
                   radius: 50,
                   backgroundImage: ref.watch(profileImage) != null
                       ? MemoryImage(ref.watch(profileImage)!)
-                      : user.photoUrl!=null?NetworkImage(user.photoUrl!):
-                      null,
-                  child: ref.watch(profileImage) == null&& user.photoUrl==null
-                      ? const Icon(Icons.camera_alt,
-                          size: 50, color: Colors.white)
-                      : null,
+                      : user.photoUrl != null
+                          ? NetworkImage(user.photoUrl!)
+                          : null,
+                  child:
+                      ref.watch(profileImage) == null && user.photoUrl == null
+                          ? const Icon(Icons.camera_alt,
+                              size: 50, color: Colors.white)
+                          : null,
                 ),
               ),
-            ),
-            const SizedBox(height: 20),
-            CustomTextFields(
-              label: 'User name ',
-              initialValue: user.name,
-              onSaved: (value) {
-                userNotifer.setName(value);
-              },
-            ),
-            CustomTextFields(
-              label: 'Email',
-              initialValue: user.email,
-              onSaved: (value) {
-                userNotifer.setEmail(value);
-              },
-              isDigitOnly: true,
-            ),
-            CustomTextFields(
-              label: 'Phone',
-              onSaved: (value) {
-                userNotifer.setPhone(value);
-              },
-              initialValue: user.phoneNumber,
-            ),
-            const SizedBox(height: 20),
-            CustomButton(
-                text: 'Update Profile',
-                onPressed: () {
-                  userNotifer.update(ref);
-                }),
-          ],
+              if (ref.watch(profileImage) != null)
+                TextButton(
+                    onPressed: () {
+                      ref.read(profileImage.notifier).state = null;
+                    },
+                    child: const Text('Remove Image')),
+              const SizedBox(height: 20),
+              CustomTextFields(
+                label: 'User name ',
+                initialValue: user.name,
+                onSaved: (value) {
+                  userNotifer.setName(value);
+                },
+              ),
+              const SizedBox(height: 20),
+              CustomTextFields(
+                label: 'Email',
+                initialValue: user.email,
+                onSaved: (value) {
+                  userNotifer.setEmail(value);
+                },
+                isDigitOnly: true,
+              ),
+              const SizedBox(height: 20),
+              CustomTextFields(
+                label: 'Phone',
+                onSaved: (value) {
+                  userNotifer.setPhone(value);
+                },
+                initialValue: user.phoneNumber,
+              ),
+              const SizedBox(height: 20),
+              CustomButton(
+                  text: 'Update Profile',
+                  onPressed: () {
+                    userNotifer.update(ref);
+                  }),
+            ],
+          ),
         ),
       ),
     );
