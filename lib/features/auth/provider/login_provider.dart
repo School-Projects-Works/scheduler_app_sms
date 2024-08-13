@@ -58,7 +58,7 @@ class LoginAction extends StateNotifier<LoginModel> {
   void login(WidgetRef ref,BuildContext context) async {
     CustomDialogs.loading(message: 'Logging in...');
     var (user, message) =
-        await AuthServices.signIn(state.email, state.password);
+        await AuthServices.signIn(state.email.trim().replaceAll(' ', ''), state.password);
     if (user != null) {
       ref.read(userProvider.notifier).setUser(user);
       CustomDialogs.dismiss();

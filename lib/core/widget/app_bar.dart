@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:scheduler_app_sms/core/navigations.dart';
 import 'package:scheduler_app_sms/features/auth/data/user_model.dart';
+import 'package:scheduler_app_sms/features/profile/profile_page.dart';
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 import 'package:scheduler_app_sms/features/task/services/functions.dart';
 import 'package:scheduler_app_sms/utils/text_styles.dart';
 import '../../utils/app_colors.dart';
 import '../appBar/gradient_app_bar.dart';
 
-Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel ?due) {
+Widget fullAppbar(
+    BuildContext context, UserModel? user, int todayTask, TaskModel? due) {
   return NewGradientAppBar(
     flexibleSpace: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -27,6 +30,8 @@ Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel
         children: <Widget>[
           Text(
             'Hello ${user!.name}!',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600),
           ),
           Text(
@@ -39,7 +44,7 @@ Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel
     actions: <Widget>[
       InkWell(
         onTap: () {
-          // Navigator.pushNamed(context, '/profile');
+          navigateAndBack(context, ProfilePage());
         },
         child: Container(
           width: 50,
@@ -76,7 +81,7 @@ Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: <Widget>[
-             Column(
+            Column(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
@@ -91,7 +96,7 @@ Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel
                   height: 3,
                 ),
                 Text(
-                due!=null?due!.title:'No task due today' ,
+                  due != null ? due.title : 'No task due today',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,
@@ -101,7 +106,14 @@ Widget fullAppbar(BuildContext context, UserModel? user, int todayTask,TaskModel
                   height: 3,
                 ),
                 Text(
-             due!=null?     formatTime(due.time):'',
+                  due != null ? formatDate(due.date) : '',
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w300),
+                ),
+                Text(
+                  due != null ? formatTime(due.time) : '',
                   style: const TextStyle(
                       color: Colors.white,
                       fontSize: 10,

@@ -1,8 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:scheduler_app_sms/core/sms_function.dart';
 import 'package:scheduler_app_sms/core/widget/custom_dialog.dart';
+import 'package:scheduler_app_sms/features/auth/data/user_model.dart';
 
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 import 'package:scheduler_app_sms/features/task/services/task_services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../auth/provider/user_provider.dart';
 import '../services/functions.dart';
@@ -12,7 +15,7 @@ final taskStreamProvider =
   var user = ref.watch(userProvider);
   var data = TaskServices.taskStream(userId: user.id);
   await for (var tasks in data) {
-    ref.read(taskFilterProvider.notifier).setItem(tasks);
+    ref.read(taskFilterProvider.notifier).setItem(tasks, user);
     yield tasks;
   }
 });
@@ -64,17 +67,38 @@ final taskFilterProvider =
 class TaskFilterProvider extends StateNotifier<TaskFilter> {
   TaskFilterProvider() : super(TaskFilter.empty);
 
-  void setItem(List<TaskModel> item) {
+  void setItem(List<TaskModel> item, UserModel user) async {
+    List<TaskModel> toBeNotified = item.where((task) {
+      var taskDate = isTimeDue(task.time, task.date);
+      var isNotCompleted =
+          task.status != 'completed' || task.status != 'ongoing';
+      var past = isPast(task.time, task.date);
+      var isTime = isExactTime(task.time, task.date);
+      return (taskDate || past || isTime) && isNotCompleted;
+    }).toList();
+    if (toBeNotified.isNotEmpty) {
+      var ids = toBeNotified.map((e) => e.id).toList().join(',');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var stored = prefs.getString('appointments') ?? '';
+      if (stored != ids) {
+        var message =
+            "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+        await sendMessage(user.phoneNumber, message);
+        prefs.setString('appointments', ids);
+      }
+    }
     state = state.copyWith(item: item, filter: item);
     var today = DateTime.now();
-    var tomorrow = DateTime.now().add(Duration(days: 1));
-    var thisWeek = DateTime.now().add(Duration(days: 7));
+    var tomorrow = DateTime.now().add(const Duration(days: 1));
+    var thisWeek = DateTime.now().add(const Duration(days: 7));
+    item.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     List<TaskModel> todaysTask = item.where((task) {
       var taskDate = DateTime.fromMillisecondsSinceEpoch(task.date);
       return taskDate.day == today.day &&
           taskDate.month == today.month &&
           taskDate.year == today.year;
     }).toList();
+
     List<TaskModel> tomorrowTask = item.where((task) {
       var taskDate = DateTime.fromMillisecondsSinceEpoch(task.date);
       return taskDate.day == tomorrow.day &&
@@ -88,7 +112,6 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
     }).toList();
 
     TaskModel dueTask = mostDueTask(item);
-
     state = state.copyWith(
         todaysTask: todaysTask,
         tomorrowTask: tomorrowTask,
@@ -123,7 +146,7 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
     }
   }
 
-  void updateTask(TaskModel copyWith) async{
+  void updateTask(TaskModel copyWith) async {
     CustomDialogs.dismiss();
     CustomDialogs.loading(message: 'updating task..');
     var results = await TaskServices.updateTask(copyWith);

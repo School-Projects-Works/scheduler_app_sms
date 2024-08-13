@@ -9,6 +9,8 @@ class AppointmentModel {
   int date;
   int time;
   String status;
+  String type;
+  bool notifierMe;
   List<String> users;
   String senderId;
   String senderName;
@@ -27,8 +29,10 @@ class AppointmentModel {
     required this.description,
     required this.date,
     required this.time,
-     this.status = 'pending',
-     this.users= const [],
+    this.status = 'pending',
+    required this.type,
+    required this.notifierMe,
+    this.users= const [],
     required this.senderId,
     required this.senderName,
     required this.senderPhoto,
@@ -42,6 +46,31 @@ class AppointmentModel {
     required this.createdAt,
   });
 
+  static AppointmentModel empty() {
+    return AppointmentModel(
+      id: '',
+      title: '',
+      description: '',
+      date: 0,
+      time: 0,
+      status: 'pending',
+      users: [],
+      senderId: '',
+      senderName: '',
+      senderPhoto: '',
+      senderPhone: '',
+      senderEmail: '',
+      recieverId: '',
+      recieverName: '',
+      recieverPhoto: '',
+      recieverPhone: '',
+      recieverEmail: '',
+      type: '',
+      notifierMe: false,
+      createdAt: 0,
+    );
+  }
+
   AppointmentModel copyWith({
     String? id,
     String? title,
@@ -49,6 +78,8 @@ class AppointmentModel {
     int? date,
     int? time,
     String? status,
+    String? type,
+    bool? notifierMe,
     List<String>? users,
     String? senderId,
     String? senderName,
@@ -69,6 +100,8 @@ class AppointmentModel {
       date: date ?? this.date,
       time: time ?? this.time,
       status: status ?? this.status,
+      type: type ?? this.type,
+      notifierMe: notifierMe ?? this.notifierMe,
       users: users ?? this.users,
       senderId: senderId ?? this.senderId,
       senderName: senderName ?? this.senderName,
@@ -93,6 +126,8 @@ class AppointmentModel {
     result.addAll({'date': date});
     result.addAll({'time': time});
     result.addAll({'status': status});
+    result.addAll({'type': type});
+    result.addAll({'notifierMe': notifierMe});
     result.addAll({'users': users});
     result.addAll({'senderId': senderId});
     result.addAll({'senderName': senderName});
@@ -117,6 +152,8 @@ class AppointmentModel {
       date: map['date']?.toInt() ?? 0,
       time: map['time']?.toInt() ?? 0,
       status: map['status'] ?? '',
+      type: map['type'] ?? '',
+      notifierMe: map['notifierMe'] ?? false,
       users: List<String>.from(map['users']),
       senderId: map['senderId'] ?? '',
       senderName: map['senderName'] ?? '',
@@ -138,7 +175,7 @@ class AppointmentModel {
 
   @override
   String toString() {
-    return 'AppointmentModel(id: $id, title: $title, description: $description, date: $date, time: $time, status: $status, users: $users, senderId: $senderId, senderName: $senderName, senderPhoto: $senderPhoto, senderPhone: $senderPhone, senderEmail: $senderEmail, recieverId: $recieverId, recieverName: $recieverName, recieverPhoto: $recieverPhoto, recieverPhone: $recieverPhone, recieverEmail: $recieverEmail, createdAt: $createdAt)';
+    return 'AppointmentModel(id: $id, title: $title, description: $description, date: $date, time: $time, status: $status, type: $type, notifierMe: $notifierMe, users: $users, senderId: $senderId, senderName: $senderName, senderPhoto: $senderPhoto, senderPhone: $senderPhone, senderEmail: $senderEmail, recieverId: $recieverId, recieverName: $recieverName, recieverPhoto: $recieverPhoto, recieverPhone: $recieverPhone, recieverEmail: $recieverEmail, createdAt: $createdAt)';
   }
 
   @override
@@ -152,6 +189,8 @@ class AppointmentModel {
       other.date == date &&
       other.time == time &&
       other.status == status &&
+      other.type == type &&
+      other.notifierMe == notifierMe &&
       listEquals(other.users, users) &&
       other.senderId == senderId &&
       other.senderName == senderName &&
@@ -174,6 +213,8 @@ class AppointmentModel {
       date.hashCode ^
       time.hashCode ^
       status.hashCode ^
+      type.hashCode ^
+      notifierMe.hashCode ^
       users.hashCode ^
       senderId.hashCode ^
       senderName.hashCode ^

@@ -7,6 +7,7 @@ import 'package:scheduler_app_sms/core/widget/custom_dialog.dart';
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 import 'package:scheduler_app_sms/features/task/provider/task_provider.dart';
 import 'package:scheduler_app_sms/features/task/services/functions.dart';
+import '../../../core/widget/blinking_widget.dart';
 import '../provider/new_task_provider.dart';
 import '../views/edit_task.dart';
 
@@ -137,8 +138,8 @@ class TaskItem extends ConsumerWidget {
         child: Row(
           children: [
             Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Text(formatTime(task.time),
                     style: const TextStyle(
@@ -156,77 +157,91 @@ class TaskItem extends ConsumerWidget {
             const SizedBox(
               width: 10,
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  task.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      decoration: task.status == 'completed'
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600),
-                ),
-                Text(
-                  task.description,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                      decoration: task.status == 'completed'
-                          ? TextDecoration.lineThrough
-                          : TextDecoration.none,
-                      fontSize: 14,
-                      color: Colors.grey),
-                ),
-                //task type
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 5),
-                  decoration: BoxDecoration(
-                      color: task.type.toLowerCase() == 'work'
-                          ? Colors.green
-                          : task.type.toLowerCase() == 'personal'
-                              ? Colors.blue
-                              : task.type.toLowerCase() == 'study'
-                                  ? const Color.fromRGBO(255, 152, 0, 1)
-                                  : task.type.toLowerCase() == 'meeting'
-                                      ? Colors.purple
-                                      : Colors.red,
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Text(
-                    task.type,
-                    style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    task.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        decoration: task.status == 'completed'
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600),
                   ),
-                )
-              ],
+                  Text(
+                    task.description,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                        decoration: task.status == 'completed'
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        fontSize: 14,
+                        color: Colors.grey),
+                  ),
+                  //task type
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    decoration: BoxDecoration(
+                        color: task.type.toLowerCase() == 'work'
+                            ? Colors.green
+                            : task.type.toLowerCase() == 'personal'
+                                ? Colors.blue
+                                : task.type.toLowerCase() == 'study'
+                                    ? const Color.fromRGBO(255, 152, 0, 1)
+                                    : task.type.toLowerCase() == 'meeting'
+                                        ? Colors.purple
+                                        : Colors.red,
+                        borderRadius: BorderRadius.circular(5)),
+                    child: Text(
+                      task.type,
+                      style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white),
+                    ),
+                  )
+                ],
+              ),
             ),
-            const Spacer(),
+            //const Spacer(),
             if (task.status == 'ongoing')
-              const Icon(
-                FontAwesomeIcons.play,
-                size: 18,
-                color: Colors.blue,
+              const Padding(
+                padding: EdgeInsets.only(left: 5),
+                child: Icon(
+                  FontAwesomeIcons.play,
+                  size: 18,
+                  color: Colors.blue,
+                ),
               ),
             if (task.status == 'completed')
-              const Icon(
-                FontAwesomeIcons.check,
-                size: 18,
-                color: Colors.green,
+              const Padding(
+                padding: EdgeInsets.only(left: 5),
+                child: Icon(
+                  FontAwesomeIcons.check,
+                  size: 18,
+                  color: Colors.green,
+                ),
               ),
-              
             Padding(
-              padding: const EdgeInsets.only(left: 10),
-              child: Icon(
-                task.notifierMe ? Icons.notifications : Icons.notifications_off,
-                size: 18,
-                color: task.notifierMe ? Colors.green : Colors.grey,
-              ),
+              padding: const EdgeInsets.only(left: 5),
+              child:isTimeDue(task.time,task.date)? BlinkWidget(
+                children:[ Icon(
+                  task.notifierMe ? Icons.notifications : Icons.notifications_off,
+                  size: 18,
+                  color: task.notifierMe ? Colors.green : Colors.grey,
+                ),
+                ]
+              ):Icon(
+                  task.notifierMe ? Icons.notifications : Icons.notifications_off,
+                  size: 18,
+                  color: task.notifierMe ? Colors.green : Colors.grey,
+                ),
             )
           ],
         ),

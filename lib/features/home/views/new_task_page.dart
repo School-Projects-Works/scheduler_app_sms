@@ -16,6 +16,7 @@ mainBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
     isScrollControlled: true,
+    isDismissible: false,
     builder: (BuildContext context) {
       return StatefulBuilder(builder: (context, setState) {
         return Container(

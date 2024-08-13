@@ -27,7 +27,11 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: Colors.white,
       appBar: PreferredSize(
           preferredSize: const Size.fromHeight(210.0),
-          child: fullAppbar(context, ref.watch(userProvider),ref.watch(taskFilterProvider).todaysTask.length,ref.watch(taskFilterProvider).dueTask)),
+          child: fullAppbar(
+              context,
+              ref.watch(userProvider),
+              ref.watch(taskFilterProvider).todaysTask.length,
+              ref.watch(taskFilterProvider).dueTask)),
       body: SizedBox(
         width: MediaQuery.of(context).size.width,
         height: MediaQuery.of(context).size.height,
@@ -38,7 +42,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                   } else if (index == 1) {
                     return const TaskPage();
                   } else {
-                    const AppointmentPage();
+                  
+                    return const AppointmentPage();
                   }
                 }(),
             loading: () => const Center(child: CircularProgressIndicator()),
