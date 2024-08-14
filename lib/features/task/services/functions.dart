@@ -36,9 +36,7 @@ bool isTimeDue(int time, int date) {
   var now = DateTime.now().add(const Duration(minutes: 20));
   var taskTime = DateTime.fromMillisecondsSinceEpoch(time);
   var taskDate = DateTime.fromMillisecondsSinceEpoch(date);
-  if (taskDate.isBefore(now)) {
-    return true;
-  } else if (taskDate.isAtSameMomentAs(now)) {
+  if (taskDate.isAtSameMomentAs(now)) {
     if (taskTime.isBefore(now)) {
       return true;
     }

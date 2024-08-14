@@ -68,7 +68,6 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
   TaskFilterProvider() : super(TaskFilter.empty);
 
   void setItem(List<TaskModel> item) async {
-   
     state = state.copyWith(item: item, filter: item);
     var today = DateTime.now();
     var tomorrow = DateTime.now().add(const Duration(days: 1));
@@ -144,17 +143,14 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
   }
 }
 
+void sendMessageOnTask(List<TaskModel> items, UserModel user) async {
+  List<TaskModel> toBeNotified = items.where((task) {
+    var isNotCompleted = task.status != 'completed' || task.status != 'ongoing';
+    var past = isPast(task.time, task.date);
 
-void sendMessageOnTask(List<TaskModel> items,UserModel user)async{
-   List<TaskModel> toBeNotified = items.where((task) {
-      var taskDate = isTimeDue(task.time, task.date);
-      var isNotCompleted =
-          task.status != 'completed' || task.status != 'ongoing';
-      var past = isPast(task.time, task.date);
-      var isTime = isExactTime(task.time, task.date);
-      return (taskDate || past || isTime) && isNotCompleted;
-    }).toList();
-    List<TaskModel> frequentMessage = items.where((task) {
+    return past && isNotCompleted;
+  }).toList();
+  List<TaskModel> frequentMessage = items.where((task) {
     var taskDate = isTimeDue(task.time, task.date);
     var isNotCompleted = task.status != 'completed' ||
         task.status != 'accepted' ||
@@ -162,20 +158,45 @@ void sendMessageOnTask(List<TaskModel> items,UserModel user)async{
     var isTime = isExactTime(task.time, task.date);
     return (taskDate || isTime) && isNotCompleted;
   }).toList();
-  if (frequentMessage.isEmpty) {
+  List<TaskModel> exactTimeData = items.where((task) {
+    var isNotCompleted = task.status != 'completed' ||
+        task.status != 'accepted' ||
+        task.status != 'pending';
+    var isTime = isExactTime(task.time, task.date);
+    return isTime && isNotCompleted;
+  }).toList();
+  if (exactTimeData.isNotEmpty) {
+    print('SMS Sent====== for exact');
     var message =
-        "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+        "Your following task needs your attention\n${exactTimeData.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
     await sendMessage(user.phoneNumber, message);
   }
-    if (toBeNotified.isNotEmpty) {
-      var ids = toBeNotified.map((e) => e.id).toList().join(',');
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var stored = prefs.getString('appointments') ?? '';
-      if (stored != ids) {
-        var message =
-            "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
-        await sendMessage(user.phoneNumber, message);
-        prefs.setString('appointments', ids);
-      }
+  if (frequentMessage.isNotEmpty) {
+    
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var lastTime = prefs.getInt('lastTime') ?? 0;
+    var currentTime = DateTime.now().millisecondsSinceEpoch;
+    if (currentTime - lastTime >= 1200000) {
+      print('SMS Sent====== for frequent');
+      var message =
+          "You have ${frequentMessage.length} task(s) that needs your attention";
+      await sendMessage(user.phoneNumber, message);
+      prefs.setInt('lastTime', currentTime);
     }
+  }
+  if (toBeNotified.isNotEmpty) {
+    var message =
+        "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+    var hash = message.hashCode.toString();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var stored = prefs.getString('appointments') ?? '';
+    if (stored != hash) {
+       prefs.setString('appointments', hash);
+      print('SMS Sent====== for past stored: $stored hash: $hash');
+      //  await sendMessage(user.phoneNumber, message);
+     
+    } else {
+      print('NNo SMS Sent======');
+    }
+  }
 }

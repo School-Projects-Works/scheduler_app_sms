@@ -132,13 +132,13 @@ class AppointmentFilterProvider extends StateNotifier<AppointmentFilter> {
 
 sendMessageOnApp(List<AppointmentModel>items,UserModel user)async{
 List<AppointmentModel> toBeNotified = items.where((task) {
-    var taskDate = isTimeDue(task.time, task.date);
+   
     var isNotCompleted = task.status != 'completed' ||
         task.status != 'accepted' ||
         task.status != 'pending';
     var past = isPast(task.time, task.date);
-    var isTime = isExactTime(task.time, task.date);
-    return (taskDate || past || isTime) && isNotCompleted;
+   
+    return  past && isNotCompleted;
   }).toList();
  List<AppointmentModel> frequentMessage = items.where((task) {
     var taskDate = isTimeDue(task.time, task.date);
@@ -148,10 +148,28 @@ List<AppointmentModel> toBeNotified = items.where((task) {
     var isTime = isExactTime(task.time, task.date);
     return (taskDate || isTime) && isNotCompleted;
   }).toList();
-  if(frequentMessage.isEmpty){
+   List<AppointmentModel> exactTimeData = items.where((task) {
+    var isNotCompleted = task.status != 'completed' ||
+        task.status != 'accepted' ||
+        task.status != 'pending';
+    var isTime = isExactTime(task.time, task.date);
+    return isTime && isNotCompleted;
+  }).toList();
+  if (exactTimeData.isNotEmpty) {
+    var message =
+        "Your following appointment needs your attention\n${exactTimeData.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+    await sendMessage(user.phoneNumber, message);
+  }
+  if(frequentMessage.isNotEmpty){
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+    var lastTime = prefs.getInt('lastTime') ?? 0;
+    var currentTime = DateTime.now().millisecondsSinceEpoch;
+    if (currentTime - lastTime >= 1200000) {
       var message =
-          "Your following appointments needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+          "You have ${toBeNotified.length} appointments that needs your attention";
       await sendMessage(user.phoneNumber, message);
+      prefs.setInt('lastTime', currentTime);
+    }
   }
   if (toBeNotified.isNotEmpty) {
     var ids = toBeNotified.map((e) => e.id).toList().join(',');
