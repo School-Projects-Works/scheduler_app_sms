@@ -12,7 +12,7 @@ final appointmentStream = StreamProvider<List<AppointmentModel>>((ref) async* {
   var user = ref.watch(userProvider);
   var data = AppServices.appointmentsStream(user.id);
   await for (var appointments in data) {
-    ref.read(appointmentFilterProvider.notifier).setItem(appointments, user);
+    ref.read(appointmentFilterProvider.notifier).setItem(appointments, );
     yield appointments;
   }
 });
@@ -73,27 +73,8 @@ final appointmentFilterProvider =
 class AppointmentFilterProvider extends StateNotifier<AppointmentFilter> {
   AppointmentFilterProvider() : super(AppointmentFilter.empty);
 
-  void setItem(List<AppointmentModel> appointments, UserModel user) async {
-    List<AppointmentModel> toBeNotified = appointments.where((task) {
-      var taskDate = isTimeDue(task.time, task.date);
-      var isNotCompleted = task.status != 'completed' ||
-          task.status != 'accepted' ||
-          task.status != 'pending';
-      var past = isPast(task.time, task.date);
-      var isTime = isExactTime(task.time, task.date);
-      return (taskDate || past || isTime) && isNotCompleted;
-    }).toList();
-    if (toBeNotified.isNotEmpty) {
-      var ids = toBeNotified.map((e) => e.id).toList().join(',');
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var stored = prefs.getString('appointments') ?? '';
-      if (stored != ids) {
-        var message =
-            "Your following appointments needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
-        await sendMessage(user.phoneNumber, message);
-        await prefs.setString('appointments', ids);      
-      }
-    }
+  void setItem(List<AppointmentModel> appointments) async {
+    
     var pending =
         appointments.where((element) => element.status == 'pending').toList();
     var accepted =
@@ -146,4 +127,41 @@ class AppointmentFilterProvider extends StateNotifier<AppointmentFilter> {
   void updateTask(AppointmentModel copyWith) {}
 
   void deleteTask(String id) {}
+}
+
+
+sendMessageOnApp(List<AppointmentModel>items,UserModel user)async{
+List<AppointmentModel> toBeNotified = items.where((task) {
+    var taskDate = isTimeDue(task.time, task.date);
+    var isNotCompleted = task.status != 'completed' ||
+        task.status != 'accepted' ||
+        task.status != 'pending';
+    var past = isPast(task.time, task.date);
+    var isTime = isExactTime(task.time, task.date);
+    return (taskDate || past || isTime) && isNotCompleted;
+  }).toList();
+ List<AppointmentModel> frequentMessage = items.where((task) {
+    var taskDate = isTimeDue(task.time, task.date);
+    var isNotCompleted = task.status != 'completed' ||
+        task.status != 'accepted' ||
+        task.status != 'pending';
+    var isTime = isExactTime(task.time, task.date);
+    return (taskDate || isTime) && isNotCompleted;
+  }).toList();
+  if(frequentMessage.isEmpty){
+      var message =
+          "Your following appointments needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+      await sendMessage(user.phoneNumber, message);
+  }
+  if (toBeNotified.isNotEmpty) {
+    var ids = toBeNotified.map((e) => e.id).toList().join(',');
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var stored = prefs.getString('appointments') ?? '';
+    if (stored != ids) {
+      var message =
+          "Your following appointments needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+      await sendMessage(user.phoneNumber, message);
+      await prefs.setString('appointments', ids);
+    }
+  }
 }

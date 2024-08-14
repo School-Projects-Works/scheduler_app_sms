@@ -15,7 +15,7 @@ final taskStreamProvider =
   var user = ref.watch(userProvider);
   var data = TaskServices.taskStream(userId: user.id);
   await for (var tasks in data) {
-    ref.read(taskFilterProvider.notifier).setItem(tasks, user);
+    ref.read(taskFilterProvider.notifier).setItem(tasks);
     yield tasks;
   }
 });
@@ -67,26 +67,8 @@ final taskFilterProvider =
 class TaskFilterProvider extends StateNotifier<TaskFilter> {
   TaskFilterProvider() : super(TaskFilter.empty);
 
-  void setItem(List<TaskModel> item, UserModel user) async {
-    List<TaskModel> toBeNotified = item.where((task) {
-      var taskDate = isTimeDue(task.time, task.date);
-      var isNotCompleted =
-          task.status != 'completed' || task.status != 'ongoing';
-      var past = isPast(task.time, task.date);
-      var isTime = isExactTime(task.time, task.date);
-      return (taskDate || past || isTime) && isNotCompleted;
-    }).toList();
-    if (toBeNotified.isNotEmpty) {
-      var ids = toBeNotified.map((e) => e.id).toList().join(',');
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var stored = prefs.getString('appointments') ?? '';
-      if (stored != ids) {
-        var message =
-            "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
-        await sendMessage(user.phoneNumber, message);
-        prefs.setString('appointments', ids);
-      }
-    }
+  void setItem(List<TaskModel> item) async {
+   
     state = state.copyWith(item: item, filter: item);
     var today = DateTime.now();
     var tomorrow = DateTime.now().add(const Duration(days: 1));
@@ -160,4 +142,40 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
           message: 'Task update failed', type: DialogType.error);
     }
   }
+}
+
+
+void sendMessageOnTask(List<TaskModel> items,UserModel user)async{
+   List<TaskModel> toBeNotified = items.where((task) {
+      var taskDate = isTimeDue(task.time, task.date);
+      var isNotCompleted =
+          task.status != 'completed' || task.status != 'ongoing';
+      var past = isPast(task.time, task.date);
+      var isTime = isExactTime(task.time, task.date);
+      return (taskDate || past || isTime) && isNotCompleted;
+    }).toList();
+    List<TaskModel> frequentMessage = items.where((task) {
+    var taskDate = isTimeDue(task.time, task.date);
+    var isNotCompleted = task.status != 'completed' ||
+        task.status != 'accepted' ||
+        task.status != 'pending';
+    var isTime = isExactTime(task.time, task.date);
+    return (taskDate || isTime) && isNotCompleted;
+  }).toList();
+  if (frequentMessage.isEmpty) {
+    var message =
+        "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+    await sendMessage(user.phoneNumber, message);
+  }
+    if (toBeNotified.isNotEmpty) {
+      var ids = toBeNotified.map((e) => e.id).toList().join(',');
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      var stored = prefs.getString('appointments') ?? '';
+      if (stored != ids) {
+        var message =
+            "Your following task needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+        await sendMessage(user.phoneNumber, message);
+        prefs.setString('appointments', ids);
+      }
+    }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scheduler_app_sms/core/provider/nav_provider.dart';
@@ -23,6 +25,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   Widget build(BuildContext context) {
     var index = ref.watch(navigationProvider);
     var taskStream = ref.watch(taskStreamProvider);
+    var user = ref.watch(userProvider);
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: PreferredSize(
@@ -37,12 +40,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         height: MediaQuery.of(context).size.height,
         child: taskStream.when(
             data: (data) => () {
+                  Timer.periodic(const Duration(seconds: 15),
+                      (Timer t) => sendMessageOnTask(data, user));
                   if (index == 0) {
                     return const TaskListPage();
                   } else if (index == 1) {
                     return const TaskPage();
                   } else {
-                  
                     return const AppointmentPage();
                   }
                 }(),

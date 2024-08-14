@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:scheduler_app_sms/core/widget/custom_input.dart';
 import 'package:scheduler_app_sms/features/appointment/provider/app_provider.dart';
 import 'package:scheduler_app_sms/features/appointment/views/app_item.dart';
+import 'package:scheduler_app_sms/features/auth/provider/user_provider.dart';
 
 import '../../../utils/app_colors.dart';
 
@@ -18,7 +21,7 @@ class _AppointmentPageState extends ConsumerState<AppointmentPage> {
   @override
   Widget build(BuildContext context) {
     var appStream = ref.watch(appointmentStream);
-
+    var user = ref.watch(userProvider);
     return appStream.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, stack) => Center(
@@ -28,6 +31,8 @@ class _AppointmentPageState extends ConsumerState<AppointmentPage> {
             )),
         data: (data) {
           var app = ref.watch(appointmentFilterProvider);
+          Timer.periodic(const Duration(seconds: 15),
+              (Timer t) => sendMessageOnApp(data, user));
           return Padding(
             padding: const EdgeInsets.all(10.0),
             child: SingleChildScrollView(
