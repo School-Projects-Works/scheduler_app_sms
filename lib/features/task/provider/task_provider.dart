@@ -181,7 +181,7 @@ void sendMessageOnTask(List<TaskModel> items, UserModel user) async {
       var message =
           "You have ${frequentMessage.length} task(s) that needs your attention";
       await sendMessage(user.phoneNumber, message);
-      prefs.setInt('lastTime', currentTime);
+      await prefs.setInt('lastTime', currentTime);
     }
   }
   if (toBeNotified.isNotEmpty) {
@@ -191,10 +191,9 @@ void sendMessageOnTask(List<TaskModel> items, UserModel user) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var stored = prefs.getString('appointments') ?? '';
     if (stored != hash) {
-       prefs.setString('appointments', hash);
+       await prefs.setString('appointments', hash);
       print('SMS Sent====== for past stored: $stored hash: $hash');
       //  await sendMessage(user.phoneNumber, message);
-     
     } else {
       print('NNo SMS Sent======');
     }

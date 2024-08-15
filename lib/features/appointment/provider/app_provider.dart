@@ -1,4 +1,5 @@
 import 'package:riverpod/riverpod.dart';
+import 'package:scheduler_app_sms/core/widget/custom_dialog.dart';
 import 'package:scheduler_app_sms/features/auth/data/user_model.dart';
 import 'package:scheduler_app_sms/features/task/data/appointment_model.dart';
 import 'package:scheduler_app_sms/features/task/services/functions.dart';
@@ -124,23 +125,43 @@ class AppointmentFilterProvider extends StateNotifier<AppointmentFilter> {
     );
   }
 
-  void updateTask(AppointmentModel copyWith) {}
+  void updateTask(AppointmentModel copyWith) async{
+    CustomDialogs.dismiss();
+    CustomDialogs.loading(message: 'Updating appointment');
+    var result = await AppServices.updateAppointment(copyWith);
+    if (result) {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(message: 'Appointment updated successfully',type: DialogType.success);
+    } else {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(message: 'Failed to update appointment',type: DialogType.error);
+    }
 
-  void deleteTask(String id) {}
+  }
+
+  void deleteTask(String id) async{
+    CustomDialogs.dismiss();
+    CustomDialogs.loading(message: 'Deleting appointment');
+    var result = await AppServices.deleteAppointment(id);
+    if (result) {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(message: 'Appointment deleted successfully',type: DialogType.success);
+    } else {
+      CustomDialogs.dismiss();
+      CustomDialogs.toast(message: 'Failed to delete appointment',type: DialogType.error);
+    }
+  }
 }
 
 
 sendMessageOnApp(List<AppointmentModel>items,UserModel user)async{
-List<AppointmentModel> toBeNotified = items.where((task) {
-   
-    var isNotCompleted = task.status != 'completed' ||
-        task.status != 'accepted' ||
-        task.status != 'pending';
+ List<AppointmentModel> toBeNotified = items.where((task) {
+    var isNotCompleted = task.status != 'completed' || task.status != 'ongoing';
     var past = isPast(task.time, task.date);
-   
-    return  past && isNotCompleted;
+
+    return past && isNotCompleted;
   }).toList();
- List<AppointmentModel> frequentMessage = items.where((task) {
+  List<AppointmentModel> frequentMessage = items.where((task) {
     var taskDate = isTimeDue(task.time, task.date);
     var isNotCompleted = task.status != 'completed' ||
         task.status != 'accepted' ||
@@ -148,7 +169,7 @@ List<AppointmentModel> toBeNotified = items.where((task) {
     var isTime = isExactTime(task.time, task.date);
     return (taskDate || isTime) && isNotCompleted;
   }).toList();
-   List<AppointmentModel> exactTimeData = items.where((task) {
+  List<AppointmentModel> exactTimeData = items.where((task) {
     var isNotCompleted = task.status != 'completed' ||
         task.status != 'accepted' ||
         task.status != 'pending';
@@ -156,30 +177,36 @@ List<AppointmentModel> toBeNotified = items.where((task) {
     return isTime && isNotCompleted;
   }).toList();
   if (exactTimeData.isNotEmpty) {
+    print('SMS Sent====== for exact');
     var message =
         "Your following appointment needs your attention\n${exactTimeData.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
     await sendMessage(user.phoneNumber, message);
   }
-  if(frequentMessage.isNotEmpty){
-     SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (frequentMessage.isNotEmpty) {
+    
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     var lastTime = prefs.getInt('lastTime') ?? 0;
     var currentTime = DateTime.now().millisecondsSinceEpoch;
     if (currentTime - lastTime >= 1200000) {
+      print('SMS Sent====== for frequent');
       var message =
-          "You have ${toBeNotified.length} appointments that needs your attention";
+          "You have ${frequentMessage.length} appointment(s) that needs your attention";
       await sendMessage(user.phoneNumber, message);
-      prefs.setInt('lastTime', currentTime);
+      await prefs.setInt('lastTime', currentTime);
     }
   }
   if (toBeNotified.isNotEmpty) {
-    var ids = toBeNotified.map((e) => e.id).toList().join(',');
+    var message =
+        "Your following appointment needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
+    var hash = message.hashCode.toString();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var stored = prefs.getString('appointments') ?? '';
-    if (stored != ids) {
-      var message =
-          "Your following appointments needs your attention\n${toBeNotified.map((e) => '${e.title} : ${formatDateTime(e.date, e.time)}').join('\n')}";
-      await sendMessage(user.phoneNumber, message);
-      await prefs.setString('appointments', ids);
+    if (stored != hash) {
+       await prefs.setString('appointments', hash);
+      print('SMS Sent====== for past stored: $stored hash: $hash');
+      //  await sendMessage(user.phoneNumber, message);
+    } else {
+      print('NNo SMS Sent======');
     }
   }
-}
+  }

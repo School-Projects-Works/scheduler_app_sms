@@ -31,8 +31,8 @@ class _AppointmentPageState extends ConsumerState<AppointmentPage> {
             )),
         data: (data) {
           var app = ref.watch(appointmentFilterProvider);
-          // Timer.periodic(const Duration(seconds: 15),
-          //     (Timer t) => sendMessageOnApp(data, user));
+          Timer.periodic(const Duration(seconds: 15),
+              (Timer t) => sendMessageOnApp(data, user));
           return Padding(
             padding: const EdgeInsets.all(10.0),
             child: SingleChildScrollView(
