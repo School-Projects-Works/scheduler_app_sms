@@ -40,8 +40,8 @@ class _HomePageState extends ConsumerState<HomePage> {
         height: MediaQuery.of(context).size.height,
         child: taskStream.when(
             data: (data) => () {
-                  Timer.periodic(const Duration(minutes: 1),
-                      (Timer t) => sendMessageOnTask(data, user));
+                  // Timer.periodic(const Duration(minutes: 1),
+                  //     (Timer t) => sendMessageOnTask(data, user));
                   if (index == 0) {
                     return const TaskListPage();
                   } else if (index == 1) {
