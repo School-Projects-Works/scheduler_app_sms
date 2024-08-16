@@ -93,7 +93,7 @@ class TaskFilterProvider extends StateNotifier<TaskFilter> {
       return taskDate.isAfter(today) && taskDate.isBefore(thisWeek);
     }).toList();
 
-    TaskModel dueTask = mostDueTask(item);
+    TaskModel? dueTask = mostDueTask(item);
     state = state.copyWith(
         todaysTask: todaysTask,
         tomorrowTask: tomorrowTask,

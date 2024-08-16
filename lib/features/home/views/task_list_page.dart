@@ -47,7 +47,7 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: taskList.todaysTask.length,
               itemBuilder: (context, index) {
-                var task = taskList.todaysTask[index];
+                var task = taskList.todaysTask.toList()[index];
                 return TaskItem(
                   task: task,
                 );
@@ -84,7 +84,7 @@ class _TaskListPageState extends ConsumerState<TaskListPage> {
               physics: const NeverScrollableScrollPhysics(),
               itemCount: taskList.tomorrowTask.length,
               itemBuilder: (context, index) {
-                var task = taskList.tomorrowTask[index];
+                var task = taskList.tomorrowTask.toList()[index];
                 return TaskItem(
                   task: task,
                 );

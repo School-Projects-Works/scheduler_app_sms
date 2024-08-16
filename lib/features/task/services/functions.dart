@@ -1,21 +1,25 @@
 import 'package:intl/intl.dart';
 import 'package:scheduler_app_sms/features/task/data/task_model.dart';
 
-TaskModel mostDueTask(List<TaskModel> tasks) {
+TaskModel? mostDueTask(List<TaskModel> tasks) {
   // check wich task is most due
   //the one whose date and time is closer to the current date and time
-  tasks.sort((a, b) => a.date.compareTo(b.date));
-  var mostDueTask = tasks[0];
-  for (var task in tasks) {
-    if (task.date == mostDueTask.date) {
-      if (task.time < mostDueTask.time) {
+  if (tasks.isNotEmpty) {
+    tasks.sort((a, b) => a.date.compareTo(b.date));
+    var mostDueTask = tasks[0];
+    for (var task in tasks) {
+      if (task.date == mostDueTask.date) {
+        if (task.time < mostDueTask.time) {
+          mostDueTask = task;
+        }
+      } else if (task.date < mostDueTask.date) {
         mostDueTask = task;
       }
-    } else if (task.date < mostDueTask.date) {
-      mostDueTask = task;
     }
+    return mostDueTask;
+  } else {
+    return null;
   }
-  return mostDueTask;
 }
 
 String formatDate(int date) {
@@ -56,7 +60,7 @@ bool isExactTime(int time, int date) {
   return false;
 }
 
-bool isPast (int time, int date){
+bool isPast(int time, int date) {
   var now = DateTime.now();
   var taskTime = DateTime.fromMillisecondsSinceEpoch(time);
   var taskDate = DateTime.fromMillisecondsSinceEpoch(date);
